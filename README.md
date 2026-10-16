@@ -26,16 +26,33 @@ Nel file `bst.cpp` viene implementata la funzione `Node* insert`:
 
 La funzione utilizza la ricorsione per scorrere l'albero fino alla posizione corretta in cui inserire il nuovo valore.
 
-# Compilazione della libreria
+# Creazione e compilazione da Terminale
 
-Per compilare la libreria è necessario utilizzare `CMake`:
+## Creazione di una libreria statica
+
+Per creare la libreria statica è necessario prima generare il file oggetto:
 
 ```bash
-cmake -S . -B build
-cmake --build build
+g++ -c bst.cpp -o bst.o
 ```
 
-Al termine della compilazione viene generata la libreria statica `libBSTlib.a` nella cartella `build`.
+Successivamente si archivia il file oggetto nella libreria statica `libbst.a`:
+
+```bash
+ar rcs libbst.a bst.o
+```
+
+## Installazione di sistema su macOS
+
+Per rendere la libreria visibile a qualsiasi progetto senza dover specificare ogni volta i percorsi con `-L` o `-I`, è possibile copiarla nelle directory di sistema `/usr/local`:
+
+```bash
+# Copia l'header nella cartella degli include globali
+sudo cp bst.h /usr/local/include/
+
+# Copia la libreria nella cartella delle librerie globali
+sudo cp libbst.a /usr/local/lib/
+```
 
 ## Utilizzo della libreria
 
@@ -53,11 +70,47 @@ int main()
 }
 ```
 
-La libreria può essere collegata durante la compilazione con:
+Se la libreria è stata installata nelle directory di sistema, può essere collegata durante la compilazione con:
 
 ```bash
-g++ main.cpp -I. -Lbuild -lBSTlib -o programma
+g++ main.cpp -lbst -o programma
 ```
+
+## Creazione e compilazione su Windows
+
+### Utilizzando MinGW e g++
+
+Con MinGW la procedura è simile a quella utilizzata su macOS e Linux:
+
+```bash
+g++ -c bst.cpp -o bst.o
+ar rcs libbst.a bst.o
+```
+
+Per compilare un programma utilizzando la libreria:
+
+```bash
+g++ main.cpp -I. -L. -lbst -o programma.exe
+```
+
+Le opzioni `-I.` e `-L.` indicano rispettivamente al compilatore dove trovare il file header e la libreria.
+
+### Utilizzando Microsoft Visual C++
+
+Con Visual C++ viene generato un file di libreria con estensione `.lib`:
+
+```powershell
+cl /c /EHsc bst.cpp
+lib /OUT:bst.lib bst.obj
+```
+
+Per compilare un programma utilizzando la libreria:
+
+```powershell
+cl /EHsc main.cpp /I. bst.lib
+```
+
+Il comando `cl` deve essere eseguito dal **Developer Command Prompt for Visual Studio**, così da avere disponibili anche gli strumenti `lib` e `cl`.
 
 
 
