@@ -1,30 +1,44 @@
 # Libreria per un BinarySearchTree in C++
 
-La libreria contiene un file header `bst.h` per le dichiarazioni - in cui vengono dichiarati il namespace "bst", lo `struct Node` e la funzione di inserimento `Node* insert()` - ed un file `bst.cpp` contenente le implementazioni.
+La libreria contiene un file header `bst.h` per le dichiarazioni nel namespace `data_structures` e un file `bst.cpp` contenente le implementazioni. La classe `BST` nasconde la gestione dei nodi e offre un'interfaccia semplice per inserimento, ricerca, visite, rimozione e distruzione dell'albero.
 
 # Struttura della libreria 
 
 ## File Header bst.h
 
-Nel file header vengono dichiarati: 
+Nel file header vengono dichiarati:
 
-1. Il namespace `bst`
-2. Lo struct `Node`
-    - 3 parametri: `int data` per il valore da memorizzare, `Node* left` e `Node* right`, due puntatori ai child-nodes inizializzati a `nullptr`
-3. La funzione `Node* insert`
-    - Due parametri formali: `Node* root` e `int val`
-    - Alla fine restituisce il puntatore alla radice dell'albero
+1. Il namespace `data_structures`
+2. Lo `struct Node`, usato internamente dalla classe:
+    - `int data` per il valore memorizzato
+    - `Node* left` e `Node* right`, inizializzati a `nullptr`
+3. La classe `BST`, che conserva privatamente la radice dell'albero e offre i metodi pubblici:
+    - `insert(int val)`
+    - `search(int val) const`
+    - `inorder() const`, `preorder() const` e `postorder() const`
+    - `remove(int val)`
+    - `clear()`
 
 ## File di implementazione bst.cpp
 
-Nel file `bst.cpp` viene implementata la funzione `Node* insert`:
+Le operazioni dell'albero sono implementate con funzioni helper ricorsive private:
 
-1. Se `root == nullptr`, viene creato e restituito un nuovo nodo contenente `val`
-2. Se `val < root->data`, la funzione viene richiamata sul sottoalbero sinistro
-3. Se `val > root->data`, la funzione viene richiamata sul sottoalbero destro
-4. Se `val == root->data`, il nodo non viene modificato
+1. Se la radice del sottoalbero è `nullptr`, `insert` crea un nuovo nodo.
+2. I valori minori vengono inseriti a sinistra e quelli maggiori a destra.
+3. Se il valore è già presente, il duplicato viene ignorato.
+4. `search` restituisce `true` se trova il valore e `false` altrimenti.
+5. Le visite restituiscono un `vector<int>` con l'ordine richiesto.
+6. `remove` gestisce foglie, nodi con un figlio e nodi con due figli usando il successore inorder.
 
-La funzione utilizza la ricorsione per scorrere l'albero fino alla posizione corretta in cui inserire il nuovo valore.
+## Gestione della memoria
+
+Ogni nodo creato da `BST::insert` appartiene all'oggetto. Il distruttore libera automaticamente tutti i nodi; se serve svuotare l'albero prima della fine dell'oggetto, chiamare:
+
+```cpp
+albero.clear();
+```
+
+La funzione `BST::remove` libera il nodo rimosso. La radice viene aggiornata internamente dalla classe.
 
 # Creazione e compilazione da Terminale
 
@@ -60,21 +74,40 @@ Per utilizzare la libreria in un altro programma è necessario includere il file
 
 ```cpp
 #include "bst.h"
+#include <vector>
 
 int main()
 {
-    bst::Node* root = nullptr;
-    root = bst::insert(root, 10);
-    root = bst::insert(root, 5);
-    root = bst::insert(root, 15);
+    data_structures::BST albero;
+    albero.insert(10);
+    albero.insert(5);
+    albero.insert(15);
+
+    if (albero.search(5))
+    {
+        // Il valore 5 esiste nell'albero.
+    }
+
+    std::vector<int> sorted = albero.inorder();
 }
 ```
 
 Se la libreria è stata installata nelle directory di sistema, può essere collegata durante la compilazione con:
 
 ```bash
-g++ main.cpp -lbst -o programma
+g++ -std=c++11 main.cpp bst.cpp -o programma
 ```
+
+## Compilazione dei test
+
+Il progetto include `test_bst.cpp`, un eseguibile di test autonomo che non usa framework esterni:
+
+```bash
+g++ -std=c++11 -Wall -Wextra -pedantic bst.cpp test_bst.cpp -o test_bst
+./test_bst
+```
+
+I test verificano inserimento, duplicati, ricerca, tutte le visite, rimozione di foglie e nodi con uno o due figli, rimozione della radice e distruzione dell'albero.
 
 ## Creazione e compilazione su Windows
 
