@@ -1,3 +1,6 @@
+using namespace data_structures;
+using namespace std;
+
 #include "bst.h"
 #include <iostream>
 #include <vector>
@@ -20,7 +23,7 @@ namespace {
 
 int main() {
     // Creiamo un oggetto della classe BST
-    data_structures::BST albero;
+    BST albero;
 
     albero.insert(8);
     albero.insert(3);

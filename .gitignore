@@ -4,3 +4,4 @@ build/
 *.d
 *.dylib
 link_repo.txt
+copilot/
