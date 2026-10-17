@@ -1,6 +1,6 @@
 # Libreria per un BinarySearchTree in C++
 
-La libreria contiene un file header `bst.h` per le dichiarazioni - in cui vengono dichiarati il namespace "bst", lo `struct Node` e la funzione di inserimento `Node* insert()` - ed un file `bst.cpp` contenente le implementazioni.
+La libreria contiene un file header `bst.h` per le dichiarazioni nel namespace `bst` e un file `bst.cpp` contenente le implementazioni procedurali ricorsive.
 
 # Struttura della libreria 
 
@@ -14,6 +14,15 @@ Nel file header vengono dichiarati:
 3. La funzione `Node* insert`
     - Due parametri formali: `Node* root` e `int val`
     - Alla fine restituisce il puntatore alla radice dell'albero
+4. La funzione `Node* search`
+    - Restituisce il nodo cercato oppure `nullptr`
+5. Le funzioni `inorder`, `preorder` e `postorder`
+    - Scrivono i valori nella `vector<int>` fornita dal chiamante
+6. La funzione `Node* remove`
+    - Restituisce la nuova radice dopo la rimozione
+    - Gestisce foglie, nodi con un figlio e nodi con due figli
+7. La funzione `void clear`
+    - Libera tutti i nodi e imposta la radice a `nullptr`
 
 ## File di implementazione bst.cpp
 
@@ -24,7 +33,17 @@ Nel file `bst.cpp` viene implementata la funzione `Node* insert`:
 3. Se `val > root->data`, la funzione viene richiamata sul sottoalbero destro
 4. Se `val == root->data`, il nodo non viene modificato
 
-La funzione utilizza la ricorsione per scorrere l'albero fino alla posizione corretta in cui inserire il nuovo valore.
+La funzione utilizza la ricorsione per scorrere l'albero fino alla posizione corretta in cui inserire il nuovo valore. I duplicati vengono ignorati, come richiesto dalla proprietà del BST.
+
+## Gestione della memoria
+
+I nodi creati con `insert` devono essere liberati chiamando `clear` quando l'albero non serve più:
+
+```cpp
+bst::clear(root);
+```
+
+La funzione `remove` libera il nodo rimosso; il risultato va sempre riassegnato alla radice.
 
 # Creazione e compilazione da Terminale
 
@@ -60,6 +79,7 @@ Per utilizzare la libreria in un altro programma è necessario includere il file
 
 ```cpp
 #include "bst.h"
+#include <vector>
 
 int main()
 {
@@ -67,14 +87,36 @@ int main()
     root = bst::insert(root, 10);
     root = bst::insert(root, 5);
     root = bst::insert(root, 15);
+
+    if (bst::search(root, 5) != nullptr)
+    {
+        // Il valore 5 esiste nell'albero.
+    }
+
+    std::vector<int> values;
+    bst::inorder(root, values);
+    root = bst::remove(root, 10);
+    bst::clear(root);
 }
 ```
 
 Se la libreria è stata installata nelle directory di sistema, può essere collegata durante la compilazione con:
 
 ```bash
-g++ main.cpp -lbst -o programma
+g++ -std=c++11 main.cpp bst.cpp -o programma
 ```
+
+## Compilazione dei test
+
+Il test autonomo non usa framework esterni:
+
+```bash
+g++ -std=c++11 -Wall -Wextra -pedantic bst.cpp test_bst.cpp -o test_bst
+./test_bst
+```
+
+Verifica inserimento, duplicati, ricerca, visite, i tre casi di rimozione,
+rimozione della radice e liberazione della memoria.
 
 ## Creazione e compilazione su Windows
 
