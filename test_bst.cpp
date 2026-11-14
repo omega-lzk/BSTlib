@@ -20,65 +20,56 @@ namespace {
 
 int main()
 {
-    bst::Node* root = nullptr;
-    root = bst::insert(root, 8);
-    root = bst::insert(root, 3);
-    root = bst::insert(root, 10);
-    root = bst::insert(root, 1);
-    root = bst::insert(root, 6);
-    root = bst::insert(root, 14);
-    root = bst::insert(root, 4);
-    root = bst::insert(root, 7);
-    root = bst::insert(root, 13);
-    root = bst::insert(root, 8);
+    bst::BinarySearchTree tree;
+    tree.insert(8);
+    tree.insert(3);
+    tree.insert(10);
+    tree.insert(1);
+    tree.insert(6);
+    tree.insert(14);
+    tree.insert(4);
+    tree.insert(7);
+    tree.insert(13);
+    tree.insert(8);
 
     bool success = true;
-    success = check(bst::search(root, 6) != nullptr,
+    success = check(!tree.empty(), "insert creates a non-empty tree") && success;
+    success = check(tree.search(6),
                     "search finds an existing value") && success;
-    success = check(bst::search(root, 99) == nullptr,
-                    "search returns nullptr for a missing value") && success;
+    success = check(!tree.search(99),
+                    "search returns false for a missing value") && success;
 
-    std::vector<int> values;
-    bst::inorder(root, values);
-    success = check(values == std::vector<int>{1, 3, 4, 6, 7, 8, 10, 13, 14},
-                    "inorder returns sorted values without duplicates") && success;
+    success = check(
+        tree.inorder() == std::vector<int>{1, 3, 4, 6, 7, 8, 10, 13, 14},
+        "inorder returns sorted values without duplicates") && success;
+    success = check(
+        tree.preorder() == std::vector<int>{8, 3, 1, 6, 4, 7, 10, 14, 13},
+        "preorder returns the expected order") && success;
+    success = check(
+        tree.postorder() == std::vector<int>{1, 4, 7, 6, 3, 13, 14, 10, 8},
+        "postorder returns the expected order") && success;
 
-    values.clear();
-    bst::preorder(root, values);
-    success = check(values == std::vector<int>{8, 3, 1, 6, 4, 7, 10, 14, 13},
-                    "preorder returns the expected order") && success;
+    success = check(tree.remove(1), "remove deletes a leaf") && success;
+    success = check(!tree.search(1), "removed leaf is no longer searchable") && success;
+    success = check(tree.remove(14), "remove deletes a node with one child") && success;
+    success = check(!tree.search(14) && tree.search(13),
+                    "one-child removal preserves the child") && success;
+    success = check(tree.remove(3), "remove deletes a node with two children") && success;
+    success = check(!tree.search(3) && tree.search(4),
+                    "two-child removal preserves the subtrees") && success;
+    success = check(tree.remove(8), "remove deletes the root") && success;
+    success = check(tree.inorder() == std::vector<int>{4, 6, 7, 10, 13},
+                    "root removal uses the inorder successor") && success;
+    success = check(!tree.remove(100),
+                    "removing a missing value returns false") && success;
 
-    values.clear();
-    bst::postorder(root, values);
-    success = check(values == std::vector<int>{1, 4, 7, 6, 3, 13, 14, 10, 8},
-                    "postorder returns the expected order") && success;
-
-    root = bst::remove(root, 1);
-    success = check(bst::search(root, 1) == nullptr,
-                    "remove deletes a leaf") && success;
-    root = bst::remove(root, 14);
-    success = check(bst::search(root, 14) == nullptr &&
-                    bst::search(root, 13) != nullptr,
-                    "remove deletes a node with one child") && success;
-    root = bst::remove(root, 3);
-    success = check(bst::search(root, 3) == nullptr &&
-                    bst::search(root, 4) != nullptr,
-                    "remove deletes a node with two children") && success;
-    root = bst::remove(root, 8);
-    success = check(root != nullptr && root->data == 10,
-                    "remove replaces the root with its inorder successor") && success;
-    root = bst::remove(root, 100);
-    success = check(root != nullptr,
-                    "removing a missing value keeps the tree") && success;
-
-    bst::clear(root);
-    success = check(root == nullptr,
-                    "clear releases the tree and resets the root") && success;
-    bst::clear(root);
+    tree.clear();
+    success = check(tree.empty(), "clear releases the tree") && success;
+    tree.clear();
 
     if (success)
     {
-        std::cout << "All procedural BST tests passed.\n";
+        std::cout << "All object-oriented BST tests passed.\n";
         return 0;
     }
 

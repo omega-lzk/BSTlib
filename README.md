@@ -1,110 +1,74 @@
-# Libreria per un BinarySearchTree in C++
+# Libreria `BinarySearchTree` in C++
 
-La libreria contiene un file header `bst.h` per le dichiarazioni nel namespace `bst` e un file `bst.cpp` contenente le implementazioni procedurali ricorsive.
+Libreria C++ per gestire un albero binario di ricerca (BST) tramite classi e
+metodi. L'API precedente basata su `struct Node` e funzioni libere è stata
+sostituita da `bst::BinarySearchTree`.
 
-# Struttura della libreria 
+## API pubblica
 
-## File Header bst.h
-
-Nel file header vengono dichiarati: 
-
-1. Il namespace `bst`
-2. Lo struct `Node`
-    - 3 parametri: `int data` per il valore da memorizzare, `Node* left` e `Node* right`, due puntatori ai child-nodes inizializzati a `nullptr`
-3. La funzione `Node* insert`
-    - Due parametri formali: `Node* root` e `int val`
-    - Alla fine restituisce il puntatore alla radice dell'albero
-4. La funzione `Node* search`
-    - Restituisce il nodo cercato oppure `nullptr`
-5. Le funzioni `inorder`, `preorder` e `postorder`
-    - Scrivono i valori nella `vector<int>` fornita dal chiamante
-6. La funzione `Node* remove`
-    - Restituisce la nuova radice dopo la rimozione
-    - Gestisce foglie, nodi con un figlio e nodi con due figli
-7. La funzione `void clear`
-    - Libera tutti i nodi e imposta la radice a `nullptr`
-
-## File di implementazione bst.cpp
-
-Nel file `bst.cpp` viene implementata la funzione `Node* insert`:
-
-1. Se `root == nullptr`, viene creato e restituito un nuovo nodo contenente `val`
-2. Se `val < root->data`, la funzione viene richiamata sul sottoalbero sinistro
-3. Se `val > root->data`, la funzione viene richiamata sul sottoalbero destro
-4. Se `val == root->data`, il nodo non viene modificato
-
-La funzione utilizza la ricorsione per scorrere l'albero fino alla posizione corretta in cui inserire il nuovo valore. I duplicati vengono ignorati, come richiesto dalla proprietà del BST.
-
-## Gestione della memoria
-
-I nodi creati con `insert` devono essere liberati chiamando `clear` quando l'albero non serve più:
+L'header `bst.h` espone la classe:
 
 ```cpp
-bst::clear(root);
-```
+namespace bst {
 
-La funzione `remove` libera il nodo rimosso; il risultato va sempre riassegnato alla radice.
-
-# Creazione e compilazione da Terminale
-
-## Creazione di una libreria statica
-
-Per creare la libreria statica è necessario prima generare il file oggetto:
-
-```bash
-g++ -c bst.cpp -o bst.o
-```
-
-Successivamente si archivia il file oggetto nella libreria statica `libbst.a`:
-
-```bash
-ar rcs libbst.a bst.o
-```
-
-## Installazione di sistema su macOS
-
-Per rendere la libreria visibile a qualsiasi progetto senza dover specificare ogni volta i percorsi con `-L` o `-I`, è possibile copiarla nelle directory di sistema `/usr/local`:
-
-```bash
-# Copia l'header nella cartella degli include globali
-sudo cp bst.h /usr/local/include/
-
-# Copia la libreria nella cartella delle librerie globali
-sudo cp libbst.a /usr/local/lib/
-```
-
-## Utilizzo della libreria
-
-Per utilizzare la libreria in un altro programma è necessario includere il file header e collegare la libreria compilata:
-
-```cpp
-#include "bst.h"
-#include <vector>
-
-int main()
-{
-    bst::Node* root = nullptr;
-    root = bst::insert(root, 10);
-    root = bst::insert(root, 5);
-    root = bst::insert(root, 15);
-
-    if (bst::search(root, 5) != nullptr)
+    class BinarySearchTree
     {
-        // Il valore 5 esiste nell'albero.
-    }
+    public:
+        BinarySearchTree();
+        ~BinarySearchTree();
 
-    std::vector<int> values;
-    bst::inorder(root, values);
-    root = bst::remove(root, 10);
-    bst::clear(root);
+        void insert(int value);
+        bool search(int value) const;
+        bool remove(int value);
+
+        std::vector<int> inorder() const;
+        std::vector<int> preorder() const;
+        std::vector<int> postorder() const;
+
+        void clear();
+        bool empty() const;
+    };
+
 }
 ```
 
-Se la libreria è stata installata nelle directory di sistema, può essere collegata durante la compilazione con:
+- `insert` aggiunge un valore; i duplicati vengono ignorati.
+- `search` restituisce `true` se il valore è presente.
+- `remove` elimina il valore e restituisce `true` se è stato trovato.
+- Le funzioni di visita restituiscono i valori nell'ordine richiesto.
+- `clear` elimina tutti i nodi; `empty` verifica se l'albero è vuoto.
 
-```bash
-g++ -std=c++11 main.cpp bst.cpp -o programma
+La radice dell'albero è un attributo privato di `BinarySearchTree`; il chiamante
+usa i metodi della classe invece di modificarla direttamente. La classe gestisce
+la memoria dei nodi e il distruttore libera automaticamente l'albero.
+
+## Esempio
+
+```cpp
+#include "bst.h"
+
+#include <iostream>
+
+int main()
+{
+    bst::BinarySearchTree tree;
+    tree.insert(10);
+    tree.insert(5);
+    tree.insert(15);
+
+    if (tree.search(5))
+    {
+        std::cout << "Il valore 5 esiste nell'albero.\n";
+    }
+
+    const std::vector<int> values = tree.inorder();
+    tree.remove(10);
+}
 ```
+
+Non è necessario chiamare `clear` prima della fine del programma: il distruttore
+della classe libera automaticamente la memoria. `clear` è disponibile per
+svuotare esplicitamente un albero ancora in uso.
 
 ## Compilazione dei test
 
@@ -115,47 +79,57 @@ g++ -std=c++11 -Wall -Wextra -pedantic bst.cpp test_bst.cpp -o test_bst
 ./test_bst
 ```
 
-Verifica inserimento, duplicati, ricerca, visite, i tre casi di rimozione,
-rimozione della radice e liberazione della memoria.
+Il test verifica inserimento, duplicati, ricerca, visite, rimozione di foglie e
+nodi con uno o due figli, rimozione della radice e svuotamento dell'albero.
 
-## Creazione e compilazione su Windows
-
-### Utilizzando MinGW e g++
-
-Con MinGW la procedura è simile a quella utilizzata su macOS e Linux:
+## Creazione di una libreria statica
 
 ```bash
-g++ -c bst.cpp -o bst.o
+g++ -std=c++11 -Wall -Wextra -pedantic -c bst.cpp -o bst.o
 ar rcs libbst.a bst.o
 ```
 
-Per compilare un programma utilizzando la libreria:
+Per usare la libreria da un altro programma:
 
 ```bash
-g++ main.cpp -I. -L. -lbst -o programma.exe
+g++ -std=c++11 -Wall -Wextra -pedantic main.cpp -I. -L. -lbst -o programma
 ```
 
-Le opzioni `-I.` e `-L.` indicano rispettivamente al compilatore dove trovare il file header e la libreria.
+## Installazione su macOS
 
-### Utilizzando Microsoft Visual C++
+Per installare header e libreria nelle directory di sistema:
 
-Con Visual C++ viene generato un file di libreria con estensione `.lib`:
+```bash
+sudo cp bst.h /usr/local/include/
+sudo cp libbst.a /usr/local/lib/
+```
+
+Dopo l'installazione, un programma può essere compilato con:
+
+```bash
+g++ -std=c++11 -Wall -Wextra -pedantic main.cpp -lbst -o programma
+```
+
+## Windows
+
+### MinGW e g++
+
+```bash
+g++ -std=c++11 -Wall -Wextra -pedantic -c bst.cpp -o bst.o
+ar rcs libbst.a bst.o
+g++ -std=c++11 main.cpp -I. -L. -lbst -o programma.exe
+```
+
+### Microsoft Visual C++
 
 ```powershell
-cl /c /EHsc bst.cpp
+cl /std:c++11 /c /EHsc bst.cpp
 lib /OUT:bst.lib bst.obj
+cl /std:c++11 /EHsc main.cpp /I. bst.lib
 ```
 
-Per compilare un programma utilizzando la libreria:
-
-```powershell
-cl /EHsc main.cpp /I. bst.lib
-```
-
-Il comando `cl` deve essere eseguito dal **Developer Command Prompt for Visual Studio**, così da avere disponibili anche gli strumenti `lib` e `cl`.
-
-
-
+Il comando `cl` deve essere eseguito dal **Developer Command Prompt for Visual
+Studio**.
 
 ## Crediti
 

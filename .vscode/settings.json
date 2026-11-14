@@ -1,0 +1,6 @@
+{
+    "code-runner.ignoreSelection": true,
+    "code-runner.executorMap": {
+        "cpp": "cd $dir && g++ -std=c++11 -Wall -Wextra -pedantic bst.cpp test_bst.cpp -o test_bst && ./test_bst"
+    }
+}

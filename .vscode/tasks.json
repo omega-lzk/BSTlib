@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compila test BST",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-std=c++11",
+                "-Wall",
+                "-Wextra",
+                "-pedantic",
+                "bst.cpp",
+                "test_bst.cpp",
+                "-o",
+                "test_bst"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Esegui test BST",
+            "type": "shell",
+            "dependsOn": "Compila test BST",
+            "command": "${workspaceFolder}/test_bst",
+            "problemMatcher": []
+        }
+    ]
+}
