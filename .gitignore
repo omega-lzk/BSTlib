@@ -4,3 +4,5 @@ build/
 *.d
 *.dylib
 link_repo.txt
+test_bst
+.vscode/
